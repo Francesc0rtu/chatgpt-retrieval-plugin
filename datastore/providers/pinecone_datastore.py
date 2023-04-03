@@ -46,7 +46,7 @@ class PineconeDataStore(DataStore):
                 )
                 pinecone.create_index(
                     PINECONE_INDEX,
-                    dimension=1536,  # dimensionality of OpenAI ada v2 embeddings
+                    dimension=768,  # dimensionality of OpenAI ada v2 embeddings
                     metadata_config={"indexed": fields_to_index},
                 )
                 self.index = pinecone.Index(PINECONE_INDEX)
@@ -71,6 +71,8 @@ class PineconeDataStore(DataStore):
         Return a list of document ids.
         """
         # Initialize a list of ids to return
+        print("Upserting chunks")
+
         doc_ids: List[str] = []
         # Initialize a list of vectors to upsert
         vectors = []
@@ -80,13 +82,15 @@ class PineconeDataStore(DataStore):
             doc_ids.append(doc_id)
             print(f"Upserting document_id: {doc_id}")
             for chunk in chunk_list:
-                # Create a vector tuple of (id, embedding, metadata)
+                # Create a vector dict of {id, embedding, metadata}
                 # Convert the metadata object to a dict with unix timestamps for dates
                 pinecone_metadata = self._get_pinecone_metadata(chunk.metadata)
                 # Add the text and document id to the metadata dict
                 pinecone_metadata["text"] = chunk.text
                 pinecone_metadata["document_id"] = doc_id
-                vector = (chunk.id, chunk.embedding, pinecone_metadata)
+                print("Type of chunk.embedding: ", type(chunk.embedding))
+                
+                vector = {"id" : chunk.id, "values": chunk.embedding, "metadata" : pinecone_metadata}
                 vectors.append(vector)
 
         # Split the vectors list into batches of the specified size
@@ -96,6 +100,7 @@ class PineconeDataStore(DataStore):
         ]
         # Upsert each batch to Pinecone
         for batch in batches:
+            # print(batch)
             try:
                 print(f"Upserting batch of size {len(batch)}")
                 self.index.upsert(vectors=batch)

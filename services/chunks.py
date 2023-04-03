@@ -184,6 +184,7 @@ def get_document_chunks(
     embeddings: List[List[float]] = []
     for i in range(0, len(all_chunks), EMBEDDINGS_BATCH_SIZE):
         # Get the text of the chunks in the current batch
+        print("Tutto okay")
         batch_texts = [
             chunk.text for chunk in all_chunks[i : i + EMBEDDINGS_BATCH_SIZE]
         ]
@@ -198,5 +199,4 @@ def get_document_chunks(
     for i, chunk in enumerate(all_chunks):
         # Assign the embedding from the embeddings list to the chunk object
         chunk.embedding = embeddings[i]
-
     return chunks

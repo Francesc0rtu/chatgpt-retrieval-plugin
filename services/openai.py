@@ -3,7 +3,32 @@ import openai
 
 
 from tenacity import retry, wait_random_exponential, stop_after_attempt
+from sentence_transformers import SentenceTransformer
 
+
+# @retry(wait=wait_random_exponential(min=1, max=20), stop=stop_after_attempt(3))
+# def get_embeddings(texts: List[str]) -> List[List[float]]:
+#     """
+#     Embed texts using OpenAI's ada model.
+
+#     Args:
+#         texts: The list of texts to embed.
+
+#     Returns:
+#         A list of embeddings, each of which is a list of floats.
+
+#     Raises:
+#         Exception: If the OpenAI API call fails.
+#     """
+#     # Call the OpenAI API to get the embeddings
+#     print("Calling OpenAI API to get embeddings...")
+#     response = openai.Embedding.create(input=texts, model="text-embedding-ada-002")
+
+#     # Extract the embedding data from the response
+#     data = response["data"]  # type: ignore
+
+#     # Return the embeddings as a list of lists of floats
+#     return [result["embedding"] for result in data]
 
 @retry(wait=wait_random_exponential(min=1, max=20), stop=stop_after_attempt(3))
 def get_embeddings(texts: List[str]) -> List[List[float]]:
@@ -20,13 +45,17 @@ def get_embeddings(texts: List[str]) -> List[List[float]]:
         Exception: If the OpenAI API call fails.
     """
     # Call the OpenAI API to get the embeddings
-    response = openai.Embedding.create(input=texts, model="text-embedding-ada-002")
+    print("Calling OpenAI API to get embeddings...")
 
-    # Extract the embedding data from the response
-    data = response["data"]  # type: ignore
+    return create_embedding(texts)
 
-    # Return the embeddings as a list of lists of floats
-    return [result["embedding"] for result in data]
+def create_embedding(inputs: List[str] ):
+    model_name = "efederici/mmarco-sentence-BERTino"
+    
+    model = SentenceTransformer(model_name)
+    embeddings = model.encode(inputs)
+    return embeddings
+
 
 
 @retry(wait=wait_random_exponential(min=1, max=20), stop=stop_after_attempt(3))

@@ -67,6 +67,7 @@ async def upsert(
 ):
     try:
         ids = await datastore.upsert(request.documents)
+        print("ids:", ids)
         return UpsertResponse(ids=ids)
     except Exception as e:
         print("Error:", e)

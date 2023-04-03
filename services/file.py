@@ -13,17 +13,17 @@ from models.models import Document, DocumentMetadata
 
 async def get_document_from_file(file: UploadFile) -> Document:
     extracted_text = await extract_text_from_form_file(file)
-    print(f"extracted_text:")
+    print(f"extracted_text: {extracted_text}")
     # get metadata
     metadata = DocumentMetadata()
     doc = Document(text=extracted_text, metadata=metadata)
-
+    
     return doc
 
 
 def extract_text_from_filepath(filepath: str, mimetype: Optional[str] = None) -> str:
     """Return the text content of a file given its filepath."""
-
+    print(f"mimetype: {mimetype}")
     if mimetype is None:
         # Get the mimetype of the file based on its extension
         mimetype, _ = mimetypes.guess_type(filepath)
@@ -33,7 +33,7 @@ def extract_text_from_filepath(filepath: str, mimetype: Optional[str] = None) ->
             mimetype = "text/markdown"
         else:
             raise Exception("Unsupported file type")
-
+    print(f"mimetype: {mimetype}")
     # Open the file in binary mode
     file = open(filepath, "rb")
     extracted_text = extract_text_from_file(file, mimetype)
@@ -42,6 +42,7 @@ def extract_text_from_filepath(filepath: str, mimetype: Optional[str] = None) ->
 
 
 def extract_text_from_file(file: BufferedReader, mimetype: str) -> str:
+    print("extract_text_from_file")
     if mimetype == "application/pdf":
         # Extract text from pdf using PyPDF2
         reader = PdfReader(file)
@@ -91,6 +92,7 @@ def extract_text_from_file(file: BufferedReader, mimetype: str) -> str:
 async def extract_text_from_form_file(file: UploadFile):
     """Return the text content of a file."""
     # get the file body from the upload file object
+    print("Extract_text_from_file")
     mimetype = file.content_type
     print(f"mimetype: {mimetype}")
     print(f"file.file: {file.file}")
@@ -110,8 +112,7 @@ async def extract_text_from_form_file(file: UploadFile):
         print(f"Error: {e}")
         os.remove(temp_file_path)
         raise e
-
     # remove file from temp location
-    os.remove(temp_file_path)
+    # os.remove(temp_file_path)
 
     return extracted_text

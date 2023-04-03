@@ -24,6 +24,7 @@ class DataStore(ABC):
         Return a list of document ids.
         """
         # Delete any existing vectors for documents with the input document ids
+        print("Uploading documents...")
         await asyncio.gather(
             *[
                 self.delete(
@@ -37,8 +38,8 @@ class DataStore(ABC):
             ]
         )
 
+        print("Uploading chunks...")
         chunks = get_document_chunks(documents, chunk_token_size)
-
         return await self._upsert(chunks)
 
     @abstractmethod
