@@ -164,3 +164,9 @@ We want to thank OpenAI & the entire ChatGPT plugins team along with everyone in
 
 - [saqadri](https://github.com/saqadri) 
 - [Flux159](http://github.com/Flux159)
+
+## TODO
+[] switch from llama.cpp to camoscio 
+[] build interface
+[] get embedding from llama instead of bert
+[]
