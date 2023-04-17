@@ -4,6 +4,11 @@ import subprocess
 import os
 import tempfile
 import sys
+from transformers import LlamaTokenizer, LlamaForCausalLM, GenerationConfig
+from transformers import AutoModelForQuestionAnswering, AutoTokenizer, pipeline
+
+from peft import PeftModel
+import torch
 
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 
@@ -52,16 +57,8 @@ def get_context(prompt: str) -> List[str]:
     return context
 
 def generate_retrieval_prompt(prompt: str, context_array: List[str], token_limit: int) -> str:
-    prompt_template=f"""Answer the question based on the context below.
-
-Context:
+    prompt_template=f"""
 <context>
-
-Question:
-{prompt}
-
-Answer:
-
 """
 
     limit = token_limit - len(prompt_template)
@@ -73,7 +70,7 @@ Answer:
     return full_prompt
 
 
-@retry(wait=wait_random_exponential(min=1, max=20), stop=stop_after_attempt(3))
+
 def invoke_llama_with_context(prompt: str, token_limit: int) -> None:
     context_array = get_context(prompt)
     full_prompt = generate_retrieval_prompt(prompt, context_array, token_limit)
@@ -113,9 +110,45 @@ def invoke_llama_with_context(prompt: str, token_limit: int) -> None:
     process.wait()
 
 
-#prompt = "How do I activate Conda for my project?"
-prompt = sys.argv[1]
 
+    
+
+# @retry(wait=wait_random_exponential(min=1, max=20), stop=stop_after_attempt(3))
+def invoke_fauno_with_context(prompt:str, token_limit: int) -> None:
+    context_array = get_context(prompt)
+    full_prompt = generate_retrieval_prompt(prompt, context_array, 500)
+
+    print(full_prompt)
+    #CUDA check
+    if torch.cuda.is_available():
+        print("CUDA is available")
+    else:
+        print("CUDA is not available")
+    prompt_file_path = ""
+    with tempfile.NamedTemporaryFile(mode='w', delete=False) as prompt_file:
+        # Write the prompt to the file
+        prompt_file.write(full_prompt)
+        prompt_file_path = prompt_file.name
+    
+    # Load the model
+    tokenizer = AutoTokenizer.from_pretrained("deepset/roberta-base-squad2")
+
+    model = AutoModelForQuestionAnswering.from_pretrained("deepset/roberta-base-squad2")
+    nlp = pipeline("question-answering", model=model, tokenizer=tokenizer)
+
+    question = {
+        "question": prompt,
+        "context": full_prompt
+    }
+
+    answer = nlp(question)
+    print(answer)
+
+
+
+
+prompt = sys.argv[1]
 # Note: token_limit is set to 1600 to leave room for the response from LLaMa (7B model maxes out at 2048 tokens)
 # Consider specifying this as an argument to the script
-invoke_llama_with_context(prompt, token_limit=1600)
+# invoke_fauno_with_context(prompt, token_limit=1600)
+invoke_fauno_with_context(prompt, token_limit=1600)

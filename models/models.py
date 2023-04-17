@@ -1,5 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional
+import numpy as np
 from enum import Enum
 
 
@@ -57,7 +58,10 @@ class Query(BaseModel):
     top_k: Optional[int] = 3
 
 
-class QueryWithEmbedding(Query):
+class QueryWithEmbedding(BaseModel):
+    query: str
+    filter: Optional[DocumentMetadataFilter] = None
+    top_k: Optional[int] = 3
     embedding: List[float]
 
 
