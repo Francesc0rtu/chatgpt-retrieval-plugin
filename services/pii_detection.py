@@ -1,4 +1,4 @@
-from services.openai import get_chat_completion
+from services.embedding import get_chat_completion
 
 
 def screen_text_for_pii(text: str) -> bool:
